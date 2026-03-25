@@ -255,17 +255,17 @@ function AdminPanel({currentUser,onLogout}) {
     const md=(!dateFrom||rd>=dateFrom)&&(!dateTo||rd<=dateTo);
     return ms&&ml&&md;
   });
-  const st={total:records.length,minimal:records.filter(r=>r.percentage<=20).length,moderate:records.filter(r=>r.percentage>20&&r.percentage<=40).length,severe:records.filter(r=>r.percentage>40&&r.percentage<=60).length,crippled:records.filter(r=>r.percentage>60&&r.percentage<=80).length,bedbound:records.filter(r=>r.percentage>80).length,avg:records.length?Math.round(records.reduce((s,r)=>s+r.percentage,0)/records.length):0};
+  const st={total:filt.length,minimal:filt.filter(r=>r.percentage<=20).length,moderate:filt.filter(r=>r.percentage>20&&r.percentage<=40).length,severe:filt.filter(r=>r.percentage>40&&r.percentage<=60).length,crippled:filt.filter(r=>r.percentage>60&&r.percentage<=80).length,bedbound:filt.filter(r=>r.percentage>80).length,avg:filt.length?Math.round(filt.reduce((s,r)=>s+r.percentage,0)/filt.length):0};
 
   // Age range helpers
   const AGE_RANGES = [{label:"< 20 ปี",min:0,max:19},{label:"20-29 ปี",min:20,max:29},{label:"30-39 ปี",min:30,max:39},{label:"40-49 ปี",min:40,max:49},{label:"50-59 ปี",min:50,max:59},{label:"60-69 ปี",min:60,max:69},{label:"70+ ปี",min:70,max:200}];
   const getAgeRange = (r) => { const a = cAge(r.patient.birthdate); return AGE_RANGES.find(ar => a >= ar.min && a <= ar.max) || AGE_RANGES[6]; };
-  const ageStats = AGE_RANGES.map(ar => { const recs = records.filter(r => { const a = cAge(r.patient.birthdate); return a >= ar.min && a <= ar.max; }); return { ...ar, count: recs.length, pct: records.length ? Math.round((recs.length / records.length) * 100) : 0, avgODI: recs.length ? Math.round(recs.reduce((s,r) => s + r.percentage, 0) / recs.length) : 0 }; });
-  const genderStats = ["ชาย","หญิง","อื่นๆ"].map(g => { const recs = records.filter(r => r.patient.gender === g); return { label: g, count: recs.length, pct: records.length ? Math.round((recs.length / records.length) * 100) : 0, avgODI: recs.length ? Math.round(recs.reduce((s,r) => s + r.percentage, 0) / recs.length) : 0 }; }).filter(g => g.count > 0);
+  const ageStats = AGE_RANGES.map(ar => { const recs = filt.filter(r => { const a = cAge(r.patient.birthdate); return a >= ar.min && a <= ar.max; }); return { ...ar, count: recs.length, pct: filt.length ? Math.round((recs.length / filt.length) * 100) : 0, avgODI: recs.length ? Math.round(recs.reduce((s,r) => s + r.percentage, 0) / recs.length) : 0 }; });
+  const genderStats = ["ชาย","หญิง","อื่นๆ"].map(g => { const recs = filt.filter(r => r.patient.gender === g); return { label: g, count: recs.length, pct: filt.length ? Math.round((recs.length / filt.length) * 100) : 0, avgODI: recs.length ? Math.round(recs.reduce((s,r) => s + r.percentage, 0) / recs.length) : 0 }; }).filter(g => g.count > 0);
 
   // Breakdown by age for a specific level filter
   const getCardAgeBreakdown = (filterFn) => {
-    const subset = records.filter(filterFn);
+    const subset = filt.filter(filterFn);
     return AGE_RANGES.map(ar => { const recs = subset.filter(r => { const a = cAge(r.patient.birthdate); return a >= ar.min && a <= ar.max; }); return { ...ar, count: recs.length, pct: subset.length ? Math.round((recs.length / subset.length) * 100) : 0 }; }).filter(x => x.count > 0);
   };
 
@@ -333,7 +333,7 @@ function AdminPanel({currentUser,onLogout}) {
           </div>
           <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
             {tab==="dashboard"&&<button onClick={refreshData} style={{padding:"8px 14px",background:"#f1f5f9",border:"1px solid #e2e8f0",borderRadius:8,color:"#475569",fontSize:13,cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:4}}>🔄 รีเฟรช</button>}
-            {tab==="dashboard"&&records.length>0&&<button onClick={exportExcel} disabled={exporting} style={{padding:"8px 18px",background:"linear-gradient(135deg, #059669, #047857)",border:"none",borderRadius:8,color:"#fff",fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 2px 8px rgba(5,150,105,0.3)"}}>{exporting?"⏳ กำลัง Export...":"📥 Export Excel"}</button>}
+            {tab==="dashboard"&&filt.length>0&&<button onClick={exportExcel} disabled={exporting} style={{padding:"8px 18px",background:"linear-gradient(135deg, #059669, #047857)",border:"none",borderRadius:8,color:"#fff",fontSize:13,cursor:"pointer",fontWeight:600,boxShadow:"0 2px 8px rgba(5,150,105,0.3)"}}>{exporting?"⏳ กำลัง Export...":"📥 Export Excel"}</button>}
             {tab==="dashboard"&&records.length>0&&currentUser.role==="admin"&&<button onClick={clrAll} style={{padding:"8px 16px",background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,color:"#ef4444",fontSize:12,cursor:"pointer",fontWeight:600}}>🗑️ ล้างข้อมูลทั้งหมด</button>}
             {tab==="users"&&currentUser.role==="admin"&&<button onClick={()=>{sEU(null);sUF({username:"",password:"",displayName:"",role:"user"});sSUF(true);}} style={{padding:"8px 18px",background:"linear-gradient(135deg, #2563eb, #1e40af)",border:"none",borderRadius:8,color:"#fff",fontSize:13,cursor:"pointer",fontWeight:600}}>+ เพิ่มผู้ใช้ใหม่</button>}
           </div>
@@ -341,8 +341,20 @@ function AdminPanel({currentUser,onLogout}) {
         <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
         <div style={{padding:"24px 28px"}}>
           {tab==="dashboard"&&(<>
+            {/* Date Filter Bar - applies to entire dashboard */}
+            <div style={{background:"#fff",borderRadius:14,padding:"16px 20px",marginBottom:20,boxShadow:"0 2px 8px rgba(0,0,0,0.04)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+              <span style={{fontSize:14,fontWeight:700,color:"#1e293b"}}>📅 ช่วงเวลา</span>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <input type="date" value={dateFrom} onChange={e=>sDF(e.target.value)} style={{padding:"8px 14px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:13,outline:"none",background:"#fff",color:dateFrom?"#1e293b":"#94a3b8"}}/>
+                <span style={{fontSize:13,color:"#64748b",fontWeight:600}}>ถึง</span>
+                <input type="date" value={dateTo} onChange={e=>sDT(e.target.value)} style={{padding:"8px 14px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:13,outline:"none",background:"#fff",color:dateTo?"#1e293b":"#94a3b8"}}/>
+              </div>
+              {(dateFrom||dateTo)&&<button onClick={()=>{sDF("");sDT("");}} style={{padding:"6px 14px",background:"#f1f5f9",border:"1px solid #e2e8f0",borderRadius:8,fontSize:12,color:"#64748b",cursor:"pointer",fontWeight:600}}>✕ ล้างวันที่</button>}
+              {(dateFrom||dateTo)&&<span style={{fontSize:12,color:"#2563eb",fontWeight:600,background:"#eff6ff",padding:"4px 10px",borderRadius:8}}>แสดงข้อมูล {filt.length} จาก {records.length} รายการ</span>}
+            </div>
+
             {/* 1. Age & Gender analysis row */}
-            {records.length > 0 && (
+            {filt.length > 0 && (
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
                 {/* Age distribution */}
                 <div style={{background:"#fff",borderRadius:14,padding:"20px",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
@@ -417,27 +429,14 @@ function AdminPanel({currentUser,onLogout}) {
             </div>
 
             {/* 3. Average ODI */}
-            {records.length>0&&<div style={{background:"#fff",borderRadius:14,padding:"18px 20px",marginBottom:24,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}><div style={{fontSize:13,color:"#94a3b8",marginBottom:6}}>ค่าเฉลี่ย ODI Score</div><div style={{display:"flex",alignItems:"center",gap:14}}><div style={{fontSize:32,fontWeight:800,color:gDL(st.avg).color}}>{st.avg}%</div><div style={{flex:1,height:10,background:"#e2e8f0",borderRadius:5,overflow:"hidden"}}><div style={{width:`${st.avg}%`,height:"100%",background:"linear-gradient(90deg, #22c55e, #eab308, #ef4444)",borderRadius:5}}/></div><div style={{fontSize:14,fontWeight:600,color:gDL(st.avg).color}}>{gDL(st.avg).levelTH}</div></div></div>}
+            {filt.length>0&&<div style={{background:"#fff",borderRadius:14,padding:"18px 20px",marginBottom:24,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}><div style={{fontSize:13,color:"#94a3b8",marginBottom:6}}>ค่าเฉลี่ย ODI Score</div><div style={{display:"flex",alignItems:"center",gap:14}}><div style={{fontSize:32,fontWeight:800,color:gDL(st.avg).color}}>{st.avg}%</div><div style={{flex:1,height:10,background:"#e2e8f0",borderRadius:5,overflow:"hidden"}}><div style={{width:`${st.avg}%`,height:"100%",background:"linear-gradient(90deg, #22c55e, #eab308, #ef4444)",borderRadius:5}}/></div><div style={{fontSize:14,fontWeight:600,color:gDL(st.avg).color}}>{gDL(st.avg).levelTH}</div></div></div>}
 
             {/* Search */}
             {/* Search & Filter */}
-            <div style={{background:"#fff",borderRadius:14,padding:"16px 20px",marginBottom:20,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
-              <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
-                <input value={search} onChange={e=>sSch(e.target.value)} placeholder="🔍 ค้นหาชื่อหรือเบอร์โทร..." style={{flex:1,minWidth:180,padding:"10px 14px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:14,outline:"none",background:"#fff"}}/>
-                <select value={fl} onChange={e=>sFl(e.target.value)} style={{padding:"10px 14px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:14,background:"#fff",outline:"none"}}><option value="all">ทุกระดับ</option><option value="Minimal Disability">Minimal (0-20%)</option><option value="Moderate Disability">Moderate (21-40%)</option><option value="Severe Disability">Severe (41-60%)</option><option value="Crippling Disability">Crippling (61-80%)</option><option value="Bed-bound or Exaggerated Disability">Bed-bound (81-100%)</option></select>
-              </div>
-              <div style={{display:"flex",gap:12,flexWrap:"wrap",alignItems:"center",marginTop:12}}>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:13,color:"#64748b",fontWeight:600,whiteSpace:"nowrap"}}>📅 ตั้งแต่</span>
-                  <input type="date" value={dateFrom} onChange={e=>sDF(e.target.value)} style={{padding:"8px 12px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:13,outline:"none",background:"#fff",color:dateFrom?"#1e293b":"#94a3b8"}}/>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:13,color:"#64748b",fontWeight:600,whiteSpace:"nowrap"}}>ถึง</span>
-                  <input type="date" value={dateTo} onChange={e=>sDT(e.target.value)} style={{padding:"8px 12px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:13,outline:"none",background:"#fff",color:dateTo?"#1e293b":"#94a3b8"}}/>
-                </div>
-                {(dateFrom||dateTo||search||fl!=="all")&&<button onClick={()=>{sSch("");sFl("all");sDF("");sDT("");}} style={{padding:"8px 14px",background:"#f1f5f9",border:"1px solid #e2e8f0",borderRadius:10,fontSize:13,color:"#64748b",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>✕ ล้างตัวกรอง</button>}
-                {(dateFrom||dateTo||search||fl!=="all")&&<span style={{fontSize:12,color:"#94a3b8"}}>พบ {filt.length} รายการ</span>}
-              </div>
+            <div style={{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>
+              <input value={search} onChange={e=>sSch(e.target.value)} placeholder="🔍 ค้นหาชื่อหรือเบอร์โทร..." style={{flex:1,minWidth:180,padding:"10px 14px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:14,outline:"none",background:"#fff"}}/>
+              <select value={fl} onChange={e=>sFl(e.target.value)} style={{padding:"10px 14px",border:"2px solid #e2e8f0",borderRadius:10,fontSize:14,background:"#fff",outline:"none"}}><option value="all">ทุกระดับ</option><option value="Minimal Disability">Minimal (0-20%)</option><option value="Moderate Disability">Moderate (21-40%)</option><option value="Severe Disability">Severe (41-60%)</option><option value="Crippling Disability">Crippling (61-80%)</option><option value="Bed-bound or Exaggerated Disability">Bed-bound (81-100%)</option></select>
+              {(search||fl!=="all")&&<button onClick={()=>{sSch("");sFl("all");}} style={{padding:"8px 14px",background:"#f1f5f9",border:"1px solid #e2e8f0",borderRadius:10,fontSize:13,color:"#64748b",cursor:"pointer",fontWeight:600}}>✕ ล้าง</button>}
             </div>
             {filt.length===0?(<div style={{background:"#fff",borderRadius:14,padding:"60px 24px",textAlign:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}><div style={{fontSize:48,marginBottom:12}}>📋</div><div style={{fontSize:16,color:"#64748b",fontWeight:600}}>{records.length===0?"ยังไม่มีข้อมูลผู้ป่วย":"ไม่พบผลลัพธ์ที่ค้นหา"}</div></div>):(<div style={{background:"#fff",borderRadius:14,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}><thead><tr style={{background:"#f8fafc"}}>{["ชื่อ-สกุล","เบอร์โทรศัพท์","อายุ/เพศ","ODI Score","ระดับ","วันที่","จัดการ"].map((h,i)=><th key={i} style={{padding:"12px 16px",textAlign:i<2?"left":"center",color:"#64748b",fontWeight:600,borderBottom:"2px solid #e2e8f0"}}>{h}</th>)}</tr></thead><tbody>{filt.map(r=>{const lv=gDL(r.percentage);return(<tr key={r.id} style={{borderBottom:"1px solid #f1f5f9"}} onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}><td style={{padding:"12px 16px",fontWeight:600,color:"#1e293b"}}>{r.patient.name}</td><td style={{padding:"12px 16px",color:"#64748b"}}>{r.patient.hn||"-"}</td><td style={{padding:"12px 16px",textAlign:"center",color:"#64748b"}}>{cAge(r.patient.birthdate)} ปี / {r.patient.gender}</td><td style={{padding:"12px 16px",textAlign:"center"}}><span style={{fontWeight:800,fontSize:16,color:lv.color}}>{r.percentage}%</span><span style={{color:"#94a3b8",fontSize:12,marginLeft:4}}>({r.totalScore}/{r.maxScore})</span></td><td style={{padding:"12px 16px",textAlign:"center"}}><span style={{display:"inline-block",padding:"4px 12px",borderRadius:12,background:lv.bg,color:lv.color,fontWeight:600,fontSize:12}}>{r.levelTH}</span></td><td style={{padding:"12px 16px",textAlign:"center",color:"#64748b",fontSize:12}}>{fD(r.submittedAt)}</td><td style={{padding:"12px 16px",textAlign:"center"}}><button onClick={()=>sSel(sel?.id===r.id?null:r)} style={{padding:"6px 12px",background:"#eff6ff",border:"none",borderRadius:6,color:"#2563eb",fontSize:12,cursor:"pointer",fontWeight:600,marginRight:4}}>ดูรายละเอียด</button>{currentUser.role==="admin"&&<button onClick={()=>delRec(r.id)} style={{padding:"6px 10px",background:"#fef2f2",border:"none",borderRadius:6,color:"#ef4444",fontSize:12,cursor:"pointer",fontWeight:600}}>ลบ</button>}</td></tr>);})}</tbody></table></div></div>)}
             {sel&&(<div style={{background:"#fff",borderRadius:14,padding:"24px",marginTop:20,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}><div><div style={{fontSize:18,fontWeight:700,color:"#1e293b"}}>{sel.patient.name}</div><div style={{fontSize:13,color:"#64748b"}}>โทร: {sel.patient.hn||"-"} | เกิด {new Date(sel.patient.birthdate).toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"})} ({cAge(sel.patient.birthdate)} ปี) | {sel.patient.gender} | ประเมินเมื่อ {fD(sel.submittedAt)}</div></div><button onClick={()=>sSel(null)} style={{padding:"6px 14px",background:"#f1f5f9",border:"none",borderRadius:8,cursor:"pointer",fontSize:13,color:"#64748b"}}>✕ ปิด</button></div><div style={{display:"flex",alignItems:"center",gap:16,padding:"16px",background:gDL(sel.percentage).bg,borderRadius:12,marginBottom:16}}><div style={{fontSize:36,fontWeight:800,color:gDL(sel.percentage).color}}>{sel.percentage}%</div><div><div style={{fontSize:16,fontWeight:700,color:gDL(sel.percentage).color}}>{sel.levelTH}</div><div style={{fontSize:13,color:"#64748b"}}>{sel.level} — คะแนน {sel.totalScore}/{sel.maxScore}</div></div></div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",gap:12}}>{ODI_SECTIONS.map(s=>{const sk=(sel.skippedSections||[]).includes(s.id),sc=sel.answers?.[s.id]??0,opt=s.options.find(o=>o.score===sc);return(<div key={s.id} style={{background:sk?"#f8fafc":"#fff",border:"1px solid #e2e8f0",borderRadius:10,padding:"12px 14px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><div style={{fontSize:13,fontWeight:700,color:sk?"#cbd5e1":"#1e293b"}}>{s.titleTH}</div>{sk?<span style={{fontSize:11,color:"#cbd5e1",fontWeight:600}}>ข้าม</span>:<span style={{fontSize:13,fontWeight:800,color:gDL((sc/5)*100).color}}>{sc}/5</span>}</div>{!sk&&opt&&<div style={{fontSize:12,color:"#64748b",lineHeight:1.4}}>{opt.textTH}</div>}</div>);})}</div></div>)}
