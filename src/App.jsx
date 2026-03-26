@@ -140,8 +140,23 @@ function PatientInfoForm({onStart,onAdmin}) {
             <button disabled={!ok} onClick={()=>onStart({name:n,hn,birthdate:bd,age,gender:g})} style={{width:"100%",padding:"14px",background:!ok?"#cbd5e1":"linear-gradient(135deg, #2563eb, #1e40af)",color:"#fff",border:"none",borderRadius:12,fontSize:16,fontWeight:700,cursor:!ok?"not-allowed":"pointer",boxShadow:!ok?"none":"0 4px 14px rgba(37,99,235,0.3)"}}>เริ่มทำแบบสอบถาม →</button>
           </div>
         </div>
-        <div style={{textAlign:"center",marginTop:20}}>
+        {/* PDPA Consent */}
+        <div style={{marginTop:16,padding:"16px 20px",background:"rgba(255,255,255,0.7)",borderRadius:12,border:"1px solid #e2e8f0"}}>
+          <div style={{fontSize:12,color:"#64748b",lineHeight:1.8,textAlign:"center"}}>
+            <span style={{color:"#475569",fontWeight:600}}>🔒 นโยบายความเป็นส่วนตัว:</span> ข้อมูลส่วนบุคคลของท่านจะถูกเก็บรักษาอย่างปลอดภัยและใช้เพื่อประเมินอาการปวดหลังส่วนล่างเท่านั้น ตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) การกด "เริ่มทำแบบสอบถาม" ถือว่าท่านยินยอมให้เก็บรวบรวมและใช้ข้อมูลตามวัตถุประสงค์ดังกล่าว
+          </div>
+        </div>
+        {/* Admin link */}
+        <div style={{textAlign:"center",marginTop:16}}>
           <button onClick={onAdmin} style={{background:"none",border:"none",color:"#94a3b8",fontSize:13,cursor:"pointer",padding:"8px 16px",borderRadius:8}} onMouseEnter={e=>e.target.style.color="#2563eb"} onMouseLeave={e=>e.target.style.color="#94a3b8"}>🔒 เข้าสู่ระบบสำหรับเจ้าหน้าที่</button>
+        </div>
+        {/* Footer */}
+        <div style={{marginTop:24,paddingTop:20,borderTop:"1px solid #cbd5e1",textAlign:"center"}}>
+          <img src="/logo-bdms.jpg" alt="BDMS Logo" style={{height:40,marginBottom:10,objectFit:"contain"}}/>
+          <div style={{fontSize:12,color:"#64748b",lineHeight:1.6}}>
+            <div style={{fontWeight:600,color:"#475569"}}>Developed by SMBD Department</div>
+            <div>Bangkok Dusit Medical Services (BDMS)</div>
+          </div>
         </div>
       </div>
     </div>
