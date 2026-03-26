@@ -151,12 +151,8 @@ function PatientInfoForm({onStart,onAdmin}) {
           <button onClick={onAdmin} style={{background:"none",border:"none",color:"#94a3b8",fontSize:13,cursor:"pointer",padding:"8px 16px",borderRadius:8}} onMouseEnter={e=>e.target.style.color="#2563eb"} onMouseLeave={e=>e.target.style.color="#94a3b8"}>🔒 เข้าสู่ระบบสำหรับเจ้าหน้าที่</button>
         </div>
         {/* Footer */}
-        <div style={{marginTop:24,padding:"20px 24px",background:"#fff",borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.04)",display:"flex",alignItems:"center",justifyContent:"center",gap:16}}>
-          <img src="/logo-bdms.jpg" alt="BDMS Logo" style={{height:36,objectFit:"contain"}}/>
-          <div style={{fontSize:12,color:"#64748b",lineHeight:1.6,textAlign:"left"}}>
-            <div style={{fontWeight:600,color:"#475569"}}>Developed by SMBD Department</div>
-            <div>Bangkok Dusit Medical Services (BDMS)</div>
-          </div>
+        <div style={{marginTop:24,padding:"16px 24px",background:"#fff",borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.04)",textAlign:"center"}}>
+          <div style={{fontSize:12,color:"#475569",fontWeight:600}}>Developed by SMBD Department</div>
         </div>
       </div>
     </div>
